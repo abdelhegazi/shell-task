@@ -137,6 +137,7 @@ jobs:
           file: ./Dockerfile
           push: false
           tags: currency-converter:ci
+          load: true
           cache-from: type=gha
           cache-to: type=gha,mode=max
 

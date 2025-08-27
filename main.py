@@ -1,5 +1,4 @@
 from fastapi import FastAPI, Query, HTTPException
-from fastapi.responses import JSONResponse
 import uvicorn
 import logging
 from contextlib import asynccontextmanager

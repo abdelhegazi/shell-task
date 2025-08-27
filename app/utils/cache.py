@@ -1,7 +1,6 @@
 import logging
 from datetime import datetime, timedelta
 from typing import Optional, Dict, Any
-import json
 
 logger = logging.getLogger(__name__)
 
