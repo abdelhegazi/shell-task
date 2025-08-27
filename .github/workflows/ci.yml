@@ -147,7 +147,7 @@ jobs:
           output-file: hadolint-results.sarif
 
       - name: Run Trivy vulnerability scanner
-        uses: aquasecurity/trivy-action@master
+        uses: aquasecurity/trivy-action@0.24.0
         with:
           image-ref: 'currency-converter:ci'
           format: 'sarif'
@@ -272,6 +272,6 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "## Reports Available:" >> $GITHUB_STEP_SUMMARY
           echo "- Bandit: `bandit-results/bandit-report.json`" >> $GITHUB_STEP_SUMMARY
-          echo "- Safety: `safety-results/safety-report.json`" >> $GITHUB_STEP_SUMMARY
+          echo "- Safety: \`safety-results/safety-report.json\`" >> $GITHUB_STEP_SUMMARY
           echo "- Trivy: Uploaded to Security tab" >> $GITHUB_STEP_SUMMARY
-          echo "- Hadolint: `hadolint-results/hadolint-results.sarif`" >> $GITHUB_STEP_SUMMARY
+          echo "- Hadolint: \`hadolint-results/hadolint-results.sarif\`" >> $GITHUB_STEP_SUMMARY
