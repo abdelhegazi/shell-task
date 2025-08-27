@@ -19,7 +19,7 @@ async def test_convert_same_currency(fx_service):
 @pytest.mark.asyncio
 async def test_convert_different_currencies(fx_service, mock_binance_service):
     mock_binance_service.get_btc_prices.return_value = {
-        "BTCUSD": 45000.0,
+        "BTCUSDT": 45000.0,  # USD maps to USDT
         "BTCGBP": 35000.0
     }
     
@@ -51,7 +51,7 @@ async def test_convert_unsupported_from_currency(fx_service, mock_binance_servic
 @pytest.mark.asyncio
 async def test_convert_unsupported_to_currency(fx_service, mock_binance_service):
     mock_binance_service.get_btc_prices.return_value = {
-        "BTCUSD": 45000.0
+        "BTCUSDT": 45000.0  # USD maps to USDT
     }
     
     with pytest.raises(ValueError, match="Currency XYZ not supported"):
@@ -60,7 +60,7 @@ async def test_convert_unsupported_to_currency(fx_service, mock_binance_service)
 @pytest.mark.asyncio
 async def test_convert_invalid_rates(fx_service, mock_binance_service):
     mock_binance_service.get_btc_prices.return_value = {
-        "BTCUSD": 0.0,
+        "BTCUSDT": 0.0,  # USD maps to USDT
         "BTCGBP": 35000.0
     }
     
@@ -75,7 +75,7 @@ async def test_get_exchange_rate_same_currency(fx_service):
 @pytest.mark.asyncio
 async def test_get_exchange_rate_different_currencies(fx_service, mock_binance_service):
     mock_binance_service.get_btc_prices.return_value = {
-        "BTCUSD": 45000.0,
+        "BTCUSDT": 45000.0,  # USD maps to USDT
         "BTCGBP": 35000.0
     }
     

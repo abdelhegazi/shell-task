@@ -120,6 +120,7 @@ jobs:
           file: ./Dockerfile
           push: false
           tags: currency-converter:security-scan
+          load: true
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -216,9 +217,9 @@ jobs:
 
       - name: Run Open Policy Agent (OPA) Conftest
         run: |
-          # Install conftest
-          wget https://github.com/open-policy-agent/conftest/releases/latest/download/conftest_Linux_x86_64.tar.gz
-          tar xzf conftest_Linux_x86_64.tar.gz
+          # Install conftest with specific version
+          wget https://github.com/open-policy-agent/conftest/releases/download/v0.53.0/conftest_0.53.0_Linux_x86_64.tar.gz
+          tar xzf conftest_0.53.0_Linux_x86_64.tar.gz
           sudo mv conftest /usr/local/bin
           
           # Run conftest on Dockerfile
@@ -230,7 +231,7 @@ jobs:
 
       - name: Kubernetes Security with Kubesec
         run: |
-          wget https://github.com/controlplaneio/kubesec/releases/latest/download/kubesec_linux_amd64.tar.gz
+          wget https://github.com/controlplaneio/kubesec/releases/download/v2.14.0/kubesec_linux_amd64.tar.gz
           tar -xf kubesec_linux_amd64.tar.gz
           ./kubesec scan helm/currency-converter/templates/deployment.yaml > kubesec-results.json || true
 
@@ -278,14 +279,15 @@ jobs:
           echo "3. Validate license compatibility for production use" >> $GITHUB_STEP_SUMMARY
           echo "4. Follow Kubernetes security best practices" >> $GITHUB_STEP_SUMMARY
 
-      - name: Comment PR with Security Summary
-        if: github.event_name == 'pull_request'
-        uses: actions/github-script@v6
-        with:
-          script: |
-            github.rest.issues.createComment({
-              issue_number: context.issue.number,
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              body: '## Security Scan Summary\n\nSecurity scans have been completed for this PR. Please review the security artifacts in the Actions tab.\n\n**Key Security Tools:**\n- SonarQube Code Analysis\n- OWASP Dependency Check\n- Container Vulnerability Scanning\n- Secret Detection\n- License Compliance Check\n\n**Full Report**: Check the Security Scanning workflow for detailed results.'
-            })
+      # Note: Commenting out PR comments as they require additional GitHub permissions
+      # - name: Comment PR with Security Summary
+      #   if: github.event_name == 'pull_request'
+      #   uses: actions/github-script@v6
+      #   with:
+      #     script: |
+      #       github.rest.issues.createComment({
+      #         issue_number: context.issue.number,
+      #         owner: context.repo.owner,
+      #         repo: context.repo.repo,
+      #         body: '## Security Scan Summary\n\nSecurity scans have been completed for this PR. Please review the security artifacts in the Actions tab.\n\n**Key Security Tools:**\n- SonarQube Code Analysis\n- OWASP Dependency Check\n- Container Vulnerability Scanning\n- Secret Detection\n- License Compliance Check\n\n**Full Report**: Check the Security Scanning workflow for detailed results.'
+      #       })
