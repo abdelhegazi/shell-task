@@ -49,53 +49,13 @@ This project prioritizes security at every level with comprehensive scanning, mo
 - **GitOps Ready**: Automated deployment pipelines with rollback capabilities
 
 ## API Usage
-
 ### Convert Currency
-
 **Endpoint:** `GET /convert`
 
 **Parameters:**
 - `ccy_from` - Source currency code (e.g., USD, EUR, GBP)
 - `ccy_to` - Target currency code (e.g., USD, EUR, GBP)  
 - `quantity` - Amount to convert (must be > 0)
-
-**Examples:**
-
-1. **USD to GBP conversion:**
-```bash
-curl "http://localhost:8000/convert?ccy_from=USD&ccy_to=GBP&quantity=1000"
-```
-Response:
-```json
-{"quantity": 3102.59, "ccy": "GBP"}
-```
-
-2. **GBP to EUR conversion:**
-```bash
-curl "http://localhost:8000/convert?ccy_from=GBP&ccy_to=EUR&quantity=500"
-```
-Response:
-```json
-{"quantity": 187.0, "ccy": "EUR"}
-```
-
-3. **Same currency (no conversion):**
-```bash
-curl "http://localhost:8000/convert?ccy_from=USD&ccy_to=USD&quantity=1000"
-```
-Response:
-```json
-{"quantity": 1000.0, "ccy": "USD"}
-```
-
-4. **EUR to USD conversion:**
-```bash
-curl "http://localhost:8000/convert?ccy_from=EUR&ccy_to=USD&quantity=100"
-```
-Response:
-```json
-{"quantity": 107.25, "ccy": "USD"}
-```
 
 ### Health Check
 ```bash
@@ -142,7 +102,6 @@ The service supports currencies that have BTC trading pairs on Binance:
 - pip (Python package manager)
 
 ## Quick Start
-
 ### Local Development
 
 1. **Verify Python version:**
@@ -175,6 +134,44 @@ python3 main.py
 - API: http://localhost:8000
 - Documentation: http://localhost:8000/docs
 - Health Check: http://localhost:8000/health
+
+**Examples:**
+
+1. **USD to GBP conversion:**
+```bash
+curl "http://localhost:8000/convert?ccy_from=USD&ccy_to=GBP&quantity=1000"
+```
+Response:
+```json
+{"quantity": 3102.59, "ccy": "GBP"}
+```
+
+2. **GBP to EUR conversion:**
+```bash
+curl "http://localhost:8000/convert?ccy_from=GBP&ccy_to=EUR&quantity=500"
+```
+Response:
+```json
+{"quantity": 187.0, "ccy": "EUR"}
+```
+
+3. **Same currency (no conversion):**
+```bash
+curl "http://localhost:8000/convert?ccy_from=USD&ccy_to=USD&quantity=1000"
+```
+Response:
+```json
+{"quantity": 1000.0, "ccy": "USD"}
+```
+
+4. **EUR to USD conversion:**
+```bash
+curl "http://localhost:8000/convert?ccy_from=EUR&ccy_to=USD&quantity=100"
+```
+Response:
+```json
+{"quantity": 107.25, "ccy": "USD"}
+```
 
 ### Docker
 
