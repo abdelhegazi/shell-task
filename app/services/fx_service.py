@@ -3,6 +3,7 @@ from app.services.binance_service import BinanceService
 
 logger = logging.getLogger(__name__)
 
+
 class FXService:
     def __init__(self, binance_service: BinanceService):
         self.binance_service = binance_service
@@ -10,7 +11,7 @@ class FXService:
     def _get_btc_pair_for_currency(self, currency: str) -> str:
         """
         Map user-friendly currency codes to actual Binance trading pairs.
-        
+
         Binance uses stablecoins and specific naming conventions that differ
         from standard ISO currency codes that users expect.
         """
@@ -21,7 +22,7 @@ class FXService:
             # "EUR": "BUSD",  # Could map to Binance USD if needed
             # "GBP": "BGBP",  # Hypothetical Binance GBP stablecoin
         }
-        
+
         # Map the currency if a mapping exists, otherwise use as-is
         binance_currency = currency_mapping.get(currency, currency)
         return f"BTC{binance_currency}"
@@ -29,7 +30,7 @@ class FXService:
     def _get_display_currency(self, binance_currency: str) -> str:
         """
         Convert Binance currency codes back to user-friendly display names.
-        
+
         This is the reverse mapping for API responses.
         """
         # Reverse mapping for display purposes
@@ -37,10 +38,12 @@ class FXService:
             "USDT": "USD",  # Tether -> US Dollar for user display
             # Add reverse mappings as needed
         }
-        
+
         return display_mapping.get(binance_currency, binance_currency)
 
-    async def convert(self, from_currency: str, to_currency: str, amount: float) -> float:
+    async def convert(
+        self, from_currency: str, to_currency: str, amount: float
+    ) -> float:
         if amount <= 0:
             raise ValueError("Amount must be greater than 0")
 
@@ -48,13 +51,13 @@ class FXService:
             return amount
 
         btc_rates = await self.binance_service.get_btc_prices()
-        
+
         from_btc_pair = self._get_btc_pair_for_currency(from_currency)
         to_btc_pair = self._get_btc_pair_for_currency(to_currency)
 
         if from_btc_pair not in btc_rates:
             raise ValueError(f"Currency {from_currency} not supported")
-        
+
         if to_btc_pair not in btc_rates:
             raise ValueError(f"Currency {to_currency} not supported")
 
@@ -79,13 +82,13 @@ class FXService:
             return 1.0
 
         btc_rates = await self.binance_service.get_btc_prices()
-        
+
         from_btc_pair = self._get_btc_pair_for_currency(from_currency)
         to_btc_pair = self._get_btc_pair_for_currency(to_currency)
 
         if from_btc_pair not in btc_rates:
             raise ValueError(f"Currency {from_currency} not supported")
-        
+
         if to_btc_pair not in btc_rates:
             raise ValueError(f"Currency {to_currency} not supported")
 
