@@ -32,3 +32,34 @@ python_files = ["test_*.py"]
 [tool.ruff]
 line-length = 100
 target-version = "py311"
+
+[tool.black]
+line-length = 88
+target-version = ['py311']
+extend-exclude = '''
+/(
+    # Virtual environments
+    \.venv
+    | \.env
+    | venv
+    | env
+    | currency-converter-env
+    
+    # Other build artifacts
+    | \.git
+    | \.hg
+    | \.mypy_cache
+    | \.tox
+    | \.nox
+    | _build
+    | buck-out
+    | build
+    | dist
+)/
+'''
+
+[tool.isort]
+profile = "black"
+line_length = 88
+skip_gitignore = true
+extend_skip = ["currency-converter-env", ".venv", "venv", "env"]

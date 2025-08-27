@@ -1,6 +1,8 @@
-import pytest
-import httpx
 from unittest.mock import patch
+
+import httpx
+import pytest
+
 from app.services.binance_service import BinanceService
 
 

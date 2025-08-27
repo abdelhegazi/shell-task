@@ -1,11 +1,12 @@
-from fastapi import FastAPI, Query, HTTPException
-import uvicorn
 import logging
 from contextlib import asynccontextmanager
 
+import uvicorn
+from fastapi import FastAPI, HTTPException, Query
+
+from app.models.response import ConversionResponse
 from app.services.binance_service import BinanceService
 from app.services.fx_service import FXService
-from app.models.response import ConversionResponse
 from app.utils.cache import CacheManager
 
 logger = logging.getLogger(__name__)

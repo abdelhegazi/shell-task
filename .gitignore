@@ -143,6 +143,7 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+currency-converter-env/
 
 # Spyder project settings
 .spyderproject

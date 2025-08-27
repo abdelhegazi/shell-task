@@ -1,4 +1,5 @@
 import logging
+
 from app.services.binance_service import BinanceService
 
 logger = logging.getLogger(__name__)

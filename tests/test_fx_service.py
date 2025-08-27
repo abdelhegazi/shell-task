@@ -1,7 +1,9 @@
-import pytest
 from unittest.mock import AsyncMock
-from app.services.fx_service import FXService
+
+import pytest
+
 from app.services.binance_service import BinanceService
+from app.services.fx_service import FXService
 
 
 @pytest.fixture
