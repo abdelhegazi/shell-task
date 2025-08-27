@@ -265,10 +265,10 @@ jobs:
           echo "# Security Scan Summary" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "## Scans Completed:" >> $GITHUB_STEP_SUMMARY
-          echo "- ✅ Code Security (Bandit)" >> $GITHUB_STEP_SUMMARY
-          echo "- ✅ Dependency Security (Safety)" >> $GITHUB_STEP_SUMMARY  
-          echo "- ✅ Container Security (Trivy)" >> $GITHUB_STEP_SUMMARY
-          echo "- ✅ Dockerfile Security (Hadolint)" >> $GITHUB_STEP_SUMMARY
+          echo "- Code Security (Bandit)" >> $GITHUB_STEP_SUMMARY
+          echo "- Dependency Security (Safety)" >> $GITHUB_STEP_SUMMARY  
+          echo "- Container Security (Trivy)" >> $GITHUB_STEP_SUMMARY
+          echo "- Dockerfile Security (Hadolint)" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "## Reports Available:" >> $GITHUB_STEP_SUMMARY
           echo "- Bandit: `bandit-results/bandit-report.json`" >> $GITHUB_STEP_SUMMARY

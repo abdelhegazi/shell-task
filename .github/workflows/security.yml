@@ -191,10 +191,10 @@ jobs:
         run: |
           # Check for GPL licenses that might cause issues
           if pip-licenses | grep -i "GPL\|AGPL\|LGPL"; then
-            echo "⚠️  GPL-based licenses detected. Please review for compatibility."
+            echo "GPL-based licenses detected. Please review for compatibility."
             echo "GPL_DETECTED=true" >> $GITHUB_ENV
           else
-            echo "✅ No problematic licenses detected."
+            echo "No problematic licenses detected."
             echo "GPL_DETECTED=false" >> $GITHUB_ENV
           fi
 
@@ -252,7 +252,7 @@ jobs:
 
       - name: Generate Security Dashboard
         run: |
-          echo "# 🔒 Security Scanning Results" >> $GITHUB_STEP_SUMMARY
+          echo "# Security Scanning Results" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "## Scans Performed" >> $GITHUB_STEP_SUMMARY
           echo "| Tool | Purpose | Status |" >> $GITHUB_STEP_SUMMARY
@@ -266,11 +266,11 @@ jobs:
           echo "| Kubesec | K8s Security | ${{ needs.compliance-security.result }} |" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "## Security Artifacts" >> $GITHUB_STEP_SUMMARY
-          echo "- 📊 **OWASP Report**: `owasp-dependency-check-results/`" >> $GITHUB_STEP_SUMMARY
-          echo "- 🐳 **Container Scans**: `container-security-results/`" >> $GITHUB_STEP_SUMMARY
-          echo "- 📋 **SBOM**: `container-security-results/sbom.spdx.json`" >> $GITHUB_STEP_SUMMARY
-          echo "- ⚖️ **License Report**: `license-reports/`" >> $GITHUB_STEP_SUMMARY
-          echo "- 🛡️ **Compliance**: `compliance-results/`" >> $GITHUB_STEP_SUMMARY
+          echo "- **OWASP Report**: `owasp-dependency-check-results/`" >> $GITHUB_STEP_SUMMARY
+          echo "- **Container Scans**: `container-security-results/`" >> $GITHUB_STEP_SUMMARY
+          echo "- **SBOM**: `container-security-results/sbom.spdx.json`" >> $GITHUB_STEP_SUMMARY
+          echo "- **License Report**: `license-reports/`" >> $GITHUB_STEP_SUMMARY
+          echo "- **Compliance**: `compliance-results/`" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "## Security Recommendations" >> $GITHUB_STEP_SUMMARY
           echo "1. Review all HIGH and CRITICAL vulnerabilities" >> $GITHUB_STEP_SUMMARY
@@ -287,5 +287,5 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: '## 🔒 Security Scan Summary\n\nSecurity scans have been completed for this PR. Please review the security artifacts in the Actions tab.\n\n**Key Security Tools:**\n- ✅ SonarQube Code Analysis\n- ✅ OWASP Dependency Check\n- ✅ Container Vulnerability Scanning\n- ✅ Secret Detection\n- ✅ License Compliance Check\n\n📋 **Full Report**: Check the Security Scanning workflow for detailed results.'
+              body: '## Security Scan Summary\n\nSecurity scans have been completed for this PR. Please review the security artifacts in the Actions tab.\n\n**Key Security Tools:**\n- SonarQube Code Analysis\n- OWASP Dependency Check\n- Container Vulnerability Scanning\n- Secret Detection\n- License Compliance Check\n\n**Full Report**: Check the Security Scanning workflow for detailed results.'
             })

@@ -46,11 +46,11 @@ jobs:
           safety check --json --output safety-critical.json || SAFETY_FAILED=true
           
           if [[ $BANDIT_FAILED == "true" ]] || [[ $SAFETY_FAILED == "true" ]]; then
-            echo "❌ Critical security issues found. Release blocked."
+            echo "Critical security issues found. Release blocked."
             echo "passed=false" >> $GITHUB_OUTPUT
             exit 1
           else
-            echo "✅ Pre-release security validation passed."
+            echo "Pre-release security validation passed."
             echo "passed=true" >> $GITHUB_OUTPUT
           fi
 
@@ -221,7 +221,7 @@ jobs:
           # kubectl config set-context staging --cluster=staging --user=staging
           # kubectl config use-context staging
           
-          echo "🚀 Deploying to staging environment..."
+          echo "Deploying to staging environment..."
           echo "Image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.ref_name }}"
           
           # helm upgrade --install currency-converter-staging helm/currency-converter/ \
@@ -255,7 +255,7 @@ jobs:
       - name: Deploy to production
         run: |
           # This would connect to your production Kubernetes cluster
-          echo "🚀 Deploying to production environment..."
+          echo "Deploying to production environment..."
           echo "Image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.ref_name }}"
           
           # Production deployment with additional safety checks
@@ -287,8 +287,8 @@ jobs:
             const version = context.ref.replace('refs/tags/', '');
             
             const body = success 
-              ? `## 🎉 Release ${version} Deployed Successfully\n\n✅ **Production deployment completed**\n\n**Security Validations:**\n- Container image signed with Cosign\n- SBOM generated and attached\n- Vulnerability scans passed\n- License compliance verified\n\n**Deployment Details:**\n- Image: \`ghcr.io/${{ github.repository }}:${version}\`\n- Environment: Production\n- Helm Chart: v${version}\n\n🔗 **Links:**\n- [Production API](https://api.company.com)\n- [Health Check](https://api.company.com/health)\n- [API Documentation](https://api.company.com/docs)`
-              : `## ❌ Release ${version} Deployment Failed\n\n❌ **Production deployment failed**\n\nPlease check the workflow logs for details.`;
+              ? `## Release ${version} Deployed Successfully\n\n**Production deployment completed**\n\n**Security Validations:**\n- Container image signed with Cosign\n- SBOM generated and attached\n- Vulnerability scans passed\n- License compliance verified\n\n**Deployment Details:**\n- Image: \`ghcr.io/${{ github.repository }}:${version}\`\n- Environment: Production\n- Helm Chart: v${version}\n\n**Links:**\n- [Production API](https://api.company.com)\n- [Health Check](https://api.company.com/health)\n- [API Documentation](https://api.company.com/docs)`
+              : `## Release ${version} Deployment Failed\n\n**Production deployment failed**\n\nPlease check the workflow logs for details.`;
             
             github.rest.repos.createRelease({
               owner: context.repo.owner,
@@ -308,7 +308,7 @@ jobs:
     steps:
       - name: Schedule security monitoring
         run: |
-          echo "🔍 Setting up continuous security monitoring for release..."
+          echo "Setting up continuous security monitoring for release..."
           echo "- Container image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.ref_name }}"
           echo "- Production endpoint monitoring enabled"
           echo "- Vulnerability database updates scheduled"

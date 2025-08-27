@@ -9,10 +9,37 @@ class FXService:
         self.binance_service = binance_service
 
     def _get_btc_pair_for_currency(self, currency: str) -> str:
-        # Map USD to USDT for Binance API
-        if currency == "USD":
-            return "BTCUSDT"
-        return f"BTC{currency}"
+        """
+        Map user-friendly currency codes to actual Binance trading pairs.
+        
+        Binance uses stablecoins and specific naming conventions that differ
+        from standard ISO currency codes that users expect.
+        """
+        # Currency mapping for Binance API compatibility
+        currency_mapping = {
+            "USD": "USDT",  # US Dollar -> Tether (USD-pegged stablecoin)
+            # Add other mappings as needed for different stablecoins or exchange-specific naming
+            # "EUR": "BUSD",  # Could map to Binance USD if needed
+            # "GBP": "BGBP",  # Hypothetical Binance GBP stablecoin
+        }
+        
+        # Map the currency if a mapping exists, otherwise use as-is
+        binance_currency = currency_mapping.get(currency, currency)
+        return f"BTC{binance_currency}"
+
+    def _get_display_currency(self, binance_currency: str) -> str:
+        """
+        Convert Binance currency codes back to user-friendly display names.
+        
+        This is the reverse mapping for API responses.
+        """
+        # Reverse mapping for display purposes
+        display_mapping = {
+            "USDT": "USD",  # Tether -> US Dollar for user display
+            # Add reverse mappings as needed
+        }
+        
+        return display_mapping.get(binance_currency, binance_currency)
 
     async def convert(self, from_currency: str, to_currency: str, amount: float) -> float:
         if amount <= 0:

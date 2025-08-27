@@ -3,7 +3,7 @@
 # Helm Chart Validation Script for Currency Converter
 set -e
 
-echo "🔍 Starting Helm Chart Validation..."
+echo "Starting Helm Chart Validation..."
 
 CHART_PATH="helm/currency-converter"
 
@@ -145,7 +145,7 @@ fi
 success "All Helm chart validations completed successfully!"
 
 echo ""
-echo "📋 Summary:"
+echo "Summary:"
 echo "- Chart structure: ✓"
 echo "- Lint validation: ✓" 
 echo "- Template rendering: ✓"
@@ -153,4 +153,4 @@ echo "- Multi-environment support: ✓"
 echo "- Advanced configurations: ✓"
 echo "- YAML syntax: ✓"
 echo ""
-echo "🚀 The Helm chart is ready for deployment!"
+echo "The Helm chart is ready for deployment!"

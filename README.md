@@ -2,22 +2,22 @@
 
 A secure, production-ready currency conversion REST API service that uses Binance Bitcoin prices to derive exchange rates. Built for Shell Trading assessment with enterprise-grade security, comprehensive CI/CD pipelines, and Kubernetes-native deployment.
 
-## 🔒 Security-First Architecture
+## Security-First Architecture
 
 This project prioritizes security at every level with comprehensive scanning, monitoring, and hardening:
 
 | **Security Layer** | **Implementation** | **Tools** |
 |-------------------|-------------------|-----------|
-| 🔍 **Code Analysis** | Static security scanning | Bandit, SonarQube, Ruff |
-| 📦 **Dependencies** | Vulnerability monitoring | Safety, OWASP Dependency Check |
-| 🐳 **Containers** | Multi-scanner validation | Trivy, Grype, Hadolint |
-| 🔐 **Secrets** | Automated detection | GitLeaks, TruffleHog |
-| 🛡️ **Infrastructure** | Policy enforcement | OPA Conftest, Kubesec |
-| ✍️ **Supply Chain** | Image signing & SBOM | Cosign, Syft |
+| **Code Analysis** | Static security scanning | Bandit, SonarQube, Ruff |
+| **Dependencies** | Vulnerability monitoring | Safety, OWASP Dependency Check |
+| **Containers** | Multi-scanner validation | Trivy, Grype, Hadolint |
+| **Secrets** | Automated detection | GitLeaks, TruffleHog |
+| **Infrastructure** | Policy enforcement | OPA Conftest, Kubesec |
+| **Supply Chain** | Image signing & SBOM | Cosign, Syft |
 
-**Security Metrics:** ✅ Zero Critical Vulnerabilities • ✅ 100% Secret Scanning • ✅ Signed Images • ✅ Complete SBOM
+**Security Metrics:** Zero Critical Vulnerabilities • 100% Secret Scanning • Signed Images • Complete SBOM
 
-📋 **[Complete Security Documentation](SECURITY.md)** | 🔧 **[Development Guide](CLAUDE.md)** | 📦 **[Helm Charts](helm/currency-converter/README.md)**
+**[Complete Security Documentation](SECURITY.md)** | **[Development Guide](CLAUDE.md)** | **[Helm Charts](helm/currency-converter/README.md)**
 
 ## Features
 

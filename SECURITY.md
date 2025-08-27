@@ -73,22 +73,22 @@ The project implements security at multiple layers:
 
 All pull requests must pass the following security checks:
 
-- ✅ Zero high or critical severity vulnerabilities
-- ✅ No secrets detected in code or commit history
-- ✅ All security linting checks pass
-- ✅ Container images vulnerability-free
-- ✅ Kubernetes security policies satisfied
-- ✅ Test coverage above 80% threshold
+- Zero high or critical severity vulnerabilities
+- No secrets detected in code or commit history
+- All security linting checks pass
+- Container images vulnerability-free
+- Kubernetes security policies satisfied
+- Test coverage above 80% threshold
 
 ### Release Requirements
 
 Production releases have additional security requirements:
 
-- ✅ Pre-release security validation complete
-- ✅ Container images cryptographically signed
-- ✅ SBOM generated and attached
-- ✅ All security scans completed successfully
-- ✅ Staging deployment health checks passed
+- Pre-release security validation complete
+- Container images cryptographically signed
+- SBOM generated and attached
+- All security scans completed successfully
+- Staging deployment health checks passed
 
 ## Vulnerability Management
 
