@@ -93,3 +93,65 @@ def test_cache_with_different_data_types(cache_manager):
     for key, value in test_cases:
         cache_manager.set(key, value)
         assert cache_manager.get(key) == value
+
+
+def test_cache_is_expired_method(cache_manager):
+    """Test the _is_expired method."""
+    # Test with expired timestamp
+    expired_time = datetime.utcnow() - timedelta(seconds=cache_manager._cache_ttl + 1)
+    assert cache_manager._is_expired(expired_time) is True
+
+    # Test with non-expired timestamp
+    valid_time = datetime.utcnow() - timedelta(seconds=cache_manager._cache_ttl - 1)
+    assert cache_manager._is_expired(valid_time) is False
+
+
+def test_cache_set_error_handling(cache_manager):
+    """Test cache set error handling."""
+    from unittest.mock import patch
+
+    # Mock datetime to raise an exception
+    with patch("app.utils.cache.datetime") as mock_datetime:
+        mock_datetime.utcnow.side_effect = Exception("Test exception")
+
+        result = cache_manager.set("test_key", "test_value")
+        assert result is False
+
+
+def test_cache_get_error_handling(cache_manager):
+    """Test cache get error handling."""
+    from unittest.mock import patch
+
+    # Set a valid value first
+    cache_manager.set("test_key", "test_value")
+
+    # Mock datetime to raise an exception during get
+    with patch("app.utils.cache.datetime") as mock_datetime:
+        mock_datetime.utcnow.side_effect = Exception("Test exception")
+
+        result = cache_manager.get("test_key")
+        assert result is None
+
+
+def test_cache_delete_error_handling(cache_manager):
+    """Test cache delete error handling."""
+    from unittest.mock import patch
+
+    # Mock the internal dictionary to raise an exception
+    with patch.object(cache_manager, "_memory_cache") as mock_cache:
+        mock_cache.__contains__.side_effect = Exception("Test exception")
+
+        result = cache_manager.delete("test_key")
+        assert result is False
+
+
+def test_cache_clear_error_handling(cache_manager):
+    """Test cache clear error handling."""
+    from unittest.mock import patch
+
+    # Mock the internal dictionary to raise an exception
+    with patch.object(cache_manager, "_memory_cache") as mock_cache:
+        mock_cache.clear.side_effect = Exception("Test exception")
+
+        result = cache_manager.clear()
+        assert result is False

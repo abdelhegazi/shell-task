@@ -104,3 +104,37 @@ async def test_get_supported_currencies(fx_service, mock_binance_service):
 
     assert result == expected_currencies
     mock_binance_service.get_supported_currencies.assert_called_once()
+
+
+def test_get_display_currency(fx_service):
+    """Test _get_display_currency method."""
+    # Test USDT to USD mapping
+    assert fx_service._get_display_currency("USDT") == "USD"
+
+    # Test currency without mapping
+    assert fx_service._get_display_currency("EUR") == "EUR"
+    assert fx_service._get_display_currency("GBP") == "GBP"
+
+
+@pytest.mark.asyncio
+async def test_get_exchange_rate_unsupported_from_currency(
+    fx_service, mock_binance_service
+):
+    """Test get_exchange_rate with unsupported from currency."""
+    mock_binance_service.get_btc_prices.return_value = {"BTCGBP": 35000.0}
+
+    with pytest.raises(ValueError, match="Currency XYZ not supported"):
+        await fx_service.get_exchange_rate("XYZ", "GBP")
+
+
+@pytest.mark.asyncio
+async def test_get_exchange_rate_unsupported_to_currency(
+    fx_service, mock_binance_service
+):
+    """Test get_exchange_rate with unsupported to currency."""
+    mock_binance_service.get_btc_prices.return_value = {
+        "BTCUSDT": 45000.0  # USD maps to USDT
+    }
+
+    with pytest.raises(ValueError, match="Currency XYZ not supported"):
+        await fx_service.get_exchange_rate("USD", "XYZ")
