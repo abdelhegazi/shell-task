@@ -40,14 +40,14 @@ jobs:
             --junitxml=test-results.xml
 
       - name: SonarQube Scan
-        uses: sonarqube/sonarqube-github-action@v2.3.0
+        uses: SonarSource/sonarqube-scan-action@master
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
         continue-on-error: true
 
       - name: SonarQube Quality Gate Check
-        uses: sonarqube/sonarqube-quality-gate-action@v1.3.0
+        uses: SonarSource/sonarqube-quality-gate-action@master
         timeout-minutes: 5
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
@@ -74,7 +74,7 @@ jobs:
             --suppression dependency-check-suppressions.xml
 
       - name: Upload OWASP results
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: always()
         with:
           name: owasp-dependency-check-results
@@ -154,7 +154,7 @@ jobs:
           output-file: sbom.spdx.json
 
       - name: Upload security scan results
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: always()
         with:
           name: container-security-results
@@ -199,7 +199,7 @@ jobs:
           fi
 
       - name: Upload license reports
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: license-reports
           path: |
@@ -235,7 +235,7 @@ jobs:
           ./kubesec scan helm/currency-converter/templates/deployment.yaml > kubesec-results.json || true
 
       - name: Upload compliance results
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: always()
         with:
           name: compliance-results
@@ -248,7 +248,7 @@ jobs:
     if: always()
     steps:
       - name: Download all security artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
 
       - name: Generate Security Dashboard
         run: |

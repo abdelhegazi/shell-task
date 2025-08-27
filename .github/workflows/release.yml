@@ -55,7 +55,7 @@ jobs:
           fi
 
       - name: Upload critical security results
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: always()
         with:
           name: pre-release-security
@@ -127,13 +127,14 @@ jobs:
           format: 'sarif'
           output: 'release-trivy-results.sarif'
 
-      - name: Upload Trivy scan results to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@v2
-        with:
-          sarif_file: 'release-trivy-results.sarif'
+      # Note: SARIF upload to Security tab requires GitHub Advanced Security
+      # - name: Upload Trivy scan results to GitHub Security tab
+      #   uses: github/codeql-action/upload-sarif@v2
+      #   with:
+      #     sarif_file: 'release-trivy-results.sarif'
 
       - name: Upload release artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: release-artifacts
           path: |
@@ -193,7 +194,7 @@ jobs:
           helm repo index ./charts/
 
       - name: Upload Helm chart
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: helm-chart
           path: charts/
