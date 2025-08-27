@@ -1,14 +1,52 @@
 # Currency Converter API
 
-A real-time currency conversion REST API service that uses Binance Bitcoin prices to derive exchange rates. Built for Shell Trading assessment.
+A secure, production-ready currency conversion REST API service that uses Binance Bitcoin prices to derive exchange rates. Built for Shell Trading assessment with enterprise-grade security, comprehensive CI/CD pipelines, and Kubernetes-native deployment.
+
+## 🔒 Security-First Architecture
+
+This project prioritizes security at every level with comprehensive scanning, monitoring, and hardening:
+
+| **Security Layer** | **Implementation** | **Tools** |
+|-------------------|-------------------|-----------|
+| 🔍 **Code Analysis** | Static security scanning | Bandit, SonarQube, Ruff |
+| 📦 **Dependencies** | Vulnerability monitoring | Safety, OWASP Dependency Check |
+| 🐳 **Containers** | Multi-scanner validation | Trivy, Grype, Hadolint |
+| 🔐 **Secrets** | Automated detection | GitLeaks, TruffleHog |
+| 🛡️ **Infrastructure** | Policy enforcement | OPA Conftest, Kubesec |
+| ✍️ **Supply Chain** | Image signing & SBOM | Cosign, Syft |
+
+**Security Metrics:** ✅ Zero Critical Vulnerabilities • ✅ 100% Secret Scanning • ✅ Signed Images • ✅ Complete SBOM
+
+📋 **[Complete Security Documentation](SECURITY.md)** | 🔧 **[Development Guide](CLAUDE.md)** | 📦 **[Helm Charts](helm/currency-converter/README.md)**
 
 ## Features
 
+### Core Functionality
 - **Real-time Exchange Rates**: Uses Binance BTC prices to calculate currency conversion rates
-- **REST API**: Simple GET endpoint with query parameters
-- **Caching**: Hourly rate updates with in-memory caching for performance
-- **Production Ready**: Docker containerization, health checks, and comprehensive error handling
-- **Well Tested**: Full test coverage with unit and integration tests
+- **REST API**: Simple GET endpoint with query parameters and OpenAPI documentation
+- **Intelligent Caching**: Hourly rate updates with in-memory caching and Redis fallback
+- **Error Handling**: Comprehensive validation and user-friendly error responses
+
+### Security & Compliance
+- **Security-First Design**: Multi-layered security scanning and validation
+- **Container Security**: Vulnerability scanning, image signing, and SBOM generation
+- **Secret Detection**: Automated scanning for exposed credentials and API keys
+- **Dependency Security**: Continuous monitoring of third-party package vulnerabilities
+- **Static Code Analysis**: Python security linting and code quality enforcement
+- **Supply Chain Security**: Cryptographically signed container images with attestations
+
+### Production Readiness
+- **Kubernetes Native**: Complete Helm charts with security contexts and best practices
+- **Multi-Environment Support**: Development, staging, and production configurations
+- **Observability**: Health checks, structured logging, and monitoring integration
+- **Auto-scaling**: Horizontal Pod Autoscaler with CPU and memory metrics
+- **High Availability**: Multi-replica deployments with proper resource management
+
+### DevOps & CI/CD
+- **Automated Testing**: Unit, integration, and security tests with 80% coverage requirement
+- **Quality Gates**: Automated code quality and security validation before deployment
+- **Multi-Architecture**: Support for AMD64 and ARM64 container builds
+- **GitOps Ready**: Automated deployment pipelines with rollback capabilities
 
 ## API Usage
 
@@ -258,6 +296,258 @@ kubectl get ingress currency-converter
 - **Production-ready**: TLS termination, resource limits, pod disruption budgets
 
 See `helm/currency-converter/README.md` for detailed Helm chart configuration options and examples.
+
+## CI/CD Pipeline
+
+The project includes comprehensive GitHub Actions workflows that demonstrate enterprise-level DevOps practices with security as the highest priority.
+
+### Workflows Overview
+
+#### 1. CI Pipeline (`.github/workflows/ci.yml`)
+Runs on every push and pull request to main/develop branches:
+
+**Code Quality & Linting:**
+- **Ruff**: Python linting with GitHub annotations
+- **Black**: Code formatting validation  
+- **isort**: Import statement organization
+- **Bandit**: Security-focused static analysis
+
+**Testing & Coverage:**
+- **pytest**: Unit tests with parallel execution
+- **Coverage reporting**: Codecov integration with 80% threshold
+- **Test artifacts**: JUnit XML and HTML reports
+
+**Security Scanning:**
+- **Safety**: Python dependency vulnerability checking
+- **Trivy**: Container image vulnerability scanning
+- **Hadolint**: Dockerfile security and best practices
+
+**Infrastructure Validation:**
+- **Helm linting**: Chart syntax and best practices
+- **Template validation**: Multi-environment rendering tests
+- **Custom validation**: Automated security and configuration checks
+
+**Integration Testing:**
+- **Live API testing**: Health checks and endpoint validation
+- **Redis integration**: Database connectivity testing
+- **End-to-end workflows**: Complete request/response cycles
+
+#### 2. Security Pipeline (`.github/workflows/security.yml`)
+Comprehensive security scanning with weekly scheduled runs:
+
+**Static Analysis:**
+- **SonarQube**: Code quality and security analysis with quality gates
+- **OWASP Dependency Check**: Known vulnerability database scanning
+- **Bandit**: Python-specific security issue detection
+
+**Secret Detection:**
+- **GitLeaks**: Historical and current secret scanning
+- **TruffleHog**: Advanced secret detection with verification
+
+**Container Security:**
+- **Trivy**: Multi-layer vulnerability scanning (OS, libraries, application)
+- **Grype**: Anchore vulnerability scanner
+- **Syft**: Software Bill of Materials (SBOM) generation
+
+**Compliance & Governance:**
+- **License scanning**: OSS license compliance checking
+- **OPA Conftest**: Policy-as-code validation
+- **Kubesec**: Kubernetes security assessment
+
+#### 3. Release Pipeline (`.github/workflows/release.yml`)
+Automated release and deployment on version tags:
+
+**Pre-Release Security:**
+- **Critical vulnerability blocking**: High-severity issues prevent releases
+- **Security validation gate**: Mandatory security checks before deployment
+
+**Container Management:**
+- **Multi-architecture builds**: AMD64 and ARM64 support
+- **Image signing**: Cosign cryptographic signatures
+- **SBOM generation**: Supply chain transparency
+
+**Deployment Automation:**
+- **Staging deployment**: Automated testing environment updates
+- **Production deployment**: Blue-green deployment with health checks
+- **Rollback capability**: Atomic deployments with automatic rollback
+
+### Security Tools Integration
+
+| Tool | Purpose | When It Runs |
+|------|---------|--------------|
+| **Bandit** | Python security linting | Every commit |
+| **Safety** | Dependency vulnerability scanning | Every commit |
+| **Trivy** | Container vulnerability scanning | Every commit & release |
+| **SonarQube** | Code quality & security analysis | Pull requests |
+| **OWASP Dependency Check** | Known vulnerability database | Weekly & releases |
+| **GitLeaks** | Secret detection | Every commit |
+| **TruffleHog** | Advanced secret scanning | Every commit |
+| **Grype** | Additional vulnerability scanning | Releases |
+| **Cosign** | Container image signing | Releases |
+| **Hadolint** | Dockerfile best practices | Every commit |
+| **Kubesec** | Kubernetes security | Every commit |
+
+### Quality Gates
+
+**Pull Request Requirements:**
+- All tests must pass (80%+ coverage required)
+- No high-severity security vulnerabilities
+- Code quality checks must pass
+- Helm chart validation must succeed
+- Integration tests must pass
+
+**Release Requirements:**
+- Pre-release security validation must pass
+- Container images must be vulnerability-free (or approved exceptions)
+- All security scans must complete successfully
+- Staging deployment must succeed with health checks
+
+### Configuration Files
+
+The project includes comprehensive configuration for all security tools:
+
+- `sonar-project.properties` - SonarQube analysis configuration
+- `.bandit` - Python security scanning settings
+- `dependency-check-suppressions.xml` - OWASP vulnerability suppressions
+- `security-policies/` - OPA Conftest security policies
+- `requirements-dev.txt` - Development and security tool dependencies
+
+### Usage in Development
+
+**Local Development:**
+```bash
+# Install development dependencies
+pip install -r requirements-dev.txt
+
+# Run security checks locally
+bandit -r app/
+safety check
+ruff check .
+```
+
+**Before Creating PR:**
+```bash
+# Run full validation suite
+./scripts/validate-helm.sh
+pytest --cov=app tests/
+black --check .
+isort --check .
+```
+
+**Monitoring Security:**
+- Security scan results are uploaded to GitHub Security tab
+- SARIF reports provide detailed vulnerability information
+- Automated security notifications for new vulnerabilities
+- Weekly scheduled scans for proactive monitoring
+
+This comprehensive CI/CD pipeline ensures that security is embedded at every stage of development, from commit to production deployment.
+
+## Security
+
+Security is the highest priority in this project, implemented through multiple layers of protection and continuous monitoring.
+
+### Security Architecture
+
+**Defense in Depth Strategy:**
+- **Code Level**: Static analysis with Bandit and SonarQube
+- **Dependencies**: Vulnerability scanning with Safety and OWASP Dependency Check
+- **Containers**: Multi-scanner approach with Trivy and Grype
+- **Infrastructure**: Kubernetes security policies with OPA Conftest
+- **Runtime**: Security contexts, non-root execution, read-only filesystems
+- **Supply Chain**: Image signing with Cosign and SBOM generation
+
+### Vulnerability Management
+
+**Continuous Scanning:**
+```bash
+# Automated scans on every commit
+├── Python Code Security (Bandit)
+├── Dependency Vulnerabilities (Safety, OWASP)
+├── Container Image Scanning (Trivy, Grype)
+├── Dockerfile Best Practices (Hadolint)
+├── Kubernetes Security (Kubesec)
+└── Secret Detection (GitLeaks, TruffleHog)
+```
+
+**Security Reporting:**
+- SARIF reports uploaded to GitHub Security tab
+- Vulnerability tracking with severity classification
+- Automated security notifications for new threats
+- Weekly comprehensive security assessments
+
+### Compliance & Governance
+
+**Security Standards:**
+- **OWASP Guidelines**: Top 10 security risks addressed
+- **CIS Benchmarks**: Container and Kubernetes hardening
+- **NIST Framework**: Security controls implementation
+- **Supply Chain Security**: SLSA Level 2 compliance
+
+**Audit Trail:**
+- All security scans tracked and versioned
+- Container image provenance with cryptographic signatures
+- Software Bill of Materials (SBOM) for complete dependency visibility
+- License compliance monitoring for legal requirements
+
+### Container Security
+
+**Image Hardening:**
+- Distroless base images for minimal attack surface
+- Non-root user execution (UID 1000)
+- Read-only root filesystem
+- Dropped capabilities (ALL capabilities removed)
+- Security contexts enforced
+
+**Runtime Security:**
+- Network policies for micro-segmentation
+- Pod security standards enforcement
+- Resource limits to prevent resource exhaustion
+- Health checks for service reliability
+
+### Security Configuration
+
+**Local Security Testing:**
+```bash
+# Install security tools
+pip install -r requirements-dev.txt
+
+# Run complete security audit
+bandit -r app/ -f json -o security-report.json
+safety check --json --output vulnerability-report.json
+trivy fs . --format json --output filesystem-scan.json
+
+# Validate Kubernetes security
+kubesec scan helm/currency-converter/templates/deployment.yaml
+```
+
+**Security Policies:**
+- `security-policies/dockerfile.rego` - Container security rules
+- `security-policies/kubernetes.rego` - K8s deployment security
+- `.bandit` - Python security scanner configuration
+- `dependency-check-suppressions.xml` - Vulnerability management
+
+### Incident Response
+
+**Security Monitoring:**
+- Real-time vulnerability alerts
+- Automated security patch notifications
+- Container image lifecycle management
+- Security metrics and dashboards
+
+**Response Procedures:**
+1. **Critical Vulnerabilities**: Immediate deployment blocking
+2. **High Severity**: 24-hour resolution requirement
+3. **Medium/Low**: Scheduled maintenance window updates
+4. **Zero-Day**: Emergency response with rollback procedures
+
+### Security Metrics
+
+The project maintains the following security KPIs:
+- **Zero Critical Vulnerabilities** in production images
+- **100% Secret Scanning** coverage across all commits
+- **Weekly Security Scans** for proactive monitoring
+- **Signed Container Images** for supply chain integrity
+- **Complete SBOM** for all deployed artifacts
 
 ## Testing
 

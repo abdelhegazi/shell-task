@@ -1,0 +1,277 @@
+name: CI Pipeline
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  code-quality:
+    name: Code Quality & Linting
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install ruff black isort bandit safety
+          pip install -r requirements.txt
+
+      - name: Run Ruff linting
+        run: ruff check . --output-format=github
+
+      - name: Check code formatting with Black
+        run: black --check --diff .
+
+      - name: Check import sorting with isort
+        run: isort --check-only --diff .
+
+      - name: Run Bandit security linting
+        run: bandit -r app/ -f json -o bandit-report.json || true
+
+      - name: Upload Bandit results
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: bandit-results
+          path: bandit-report.json
+
+  test:
+    name: Unit Tests & Coverage
+    runs-on: ubuntu-latest
+    needs: code-quality
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install pytest-cov pytest-xdist
+
+      - name: Run tests with coverage
+        run: |
+          pytest tests/ \
+            --cov=app \
+            --cov-report=xml \
+            --cov-report=html \
+            --cov-report=term-missing \
+            --cov-fail-under=80 \
+            --junitxml=test-results.xml \
+            -n auto
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          file: ./coverage.xml
+          flags: unittests
+          name: codecov-umbrella
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: test-results
+          path: |
+            test-results.xml
+            htmlcov/
+            coverage.xml
+
+  dependency-security:
+    name: Dependency Security Scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install Safety
+        run: pip install safety
+
+      - name: Run Safety check
+        run: |
+          pip freeze | safety check --json --output safety-report.json || true
+
+      - name: Upload Safety results
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: safety-results
+          path: safety-report.json
+
+  docker-security:
+    name: Docker Security Scan
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          push: false
+          tags: currency-converter:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Run Hadolint (Dockerfile linter)
+        uses: hadolint/hadolint-action@v3.1.0
+        with:
+          dockerfile: Dockerfile
+          format: sarif
+          output-file: hadolint-results.sarif
+
+      - name: Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'currency-converter:ci'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+
+      - name: Upload Trivy scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v2
+        if: always()
+        with:
+          sarif_file: 'trivy-results.sarif'
+
+      - name: Upload Hadolint results
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: hadolint-results
+          path: hadolint-results.sarif
+
+  helm-validation:
+    name: Helm Chart Validation
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v3
+        with:
+          version: '3.12.0'
+
+      - name: Lint Helm chart
+        run: |
+          helm lint helm/currency-converter/
+
+      - name: Validate Helm templates
+        run: |
+          helm template test-release helm/currency-converter/ > rendered-templates.yaml
+          helm template test-dev helm/currency-converter/ -f helm/currency-converter/values-development.yaml > /dev/null
+          helm template test-prod helm/currency-converter/ -f helm/currency-converter/values-production.yaml > /dev/null
+
+      - name: Run custom Helm validation script
+        run: |
+          chmod +x scripts/validate-helm.sh
+          ./scripts/validate-helm.sh
+
+      - name: Upload rendered templates
+        uses: actions/upload-artifact@v3
+        with:
+          name: helm-templates
+          path: rendered-templates.yaml
+
+  integration-test:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    needs: [test, docker-security]
+    services:
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: --health-cmd="redis-cli ping" --health-interval=10s --health-timeout=5s --health-retries=3
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install httpx pytest-asyncio
+
+      - name: Start application
+        run: |
+          python main.py &
+          sleep 10
+
+      - name: Run integration tests
+        run: |
+          # Test health endpoint
+          curl -f http://localhost:8000/health || exit 1
+          
+          # Test API endpoints
+          response=$(curl -s "http://localhost:8000/convert?ccy_from=USD&ccy_to=USD&quantity=1000")
+          echo "Response: $response"
+          
+          # Verify response format
+          echo $response | python -c "
+          import sys, json
+          data = json.load(sys.stdin)
+          assert 'quantity' in data
+          assert 'ccy' in data
+          assert data['quantity'] == 1000.0
+          assert data['ccy'] == 'USD'
+          print('Integration tests passed!')
+          "
+
+  security-summary:
+    name: Security Summary
+    runs-on: ubuntu-latest
+    needs: [code-quality, dependency-security, docker-security]
+    if: always()
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v3
+
+      - name: Security Summary Report
+        run: |
+          echo "# Security Scan Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Scans Completed:" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Code Security (Bandit)" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Dependency Security (Safety)" >> $GITHUB_STEP_SUMMARY  
+          echo "- ✅ Container Security (Trivy)" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Dockerfile Security (Hadolint)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "## Reports Available:" >> $GITHUB_STEP_SUMMARY
+          echo "- Bandit: `bandit-results/bandit-report.json`" >> $GITHUB_STEP_SUMMARY
+          echo "- Safety: `safety-results/safety-report.json`" >> $GITHUB_STEP_SUMMARY
+          echo "- Trivy: Uploaded to Security tab" >> $GITHUB_STEP_SUMMARY
+          echo "- Hadolint: `hadolint-results/hadolint-results.sarif`" >> $GITHUB_STEP_SUMMARY

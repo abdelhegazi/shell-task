@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<suppressions xmlns="https://jeremylong.github.io/DependencyCheck/dependency-suppression.1.3.xsd">
+    <!-- 
+        OWASP Dependency Check Suppressions
+        Add specific CVE suppressions here if they are false positives
+        or have been mitigated through other means
+    -->
+    
+    <!-- Example suppression (remove if not needed):
+    <suppress>
+        <notes>Example suppression for a specific CVE that has been addressed</notes>
+        <packageUrl regex="true">^pkg:pypi/.*$</packageUrl>
+        <vulnerabilityName>CVE-2023-XXXXX</vulnerabilityName>
+    </suppress>
+    -->
+    
+    <!-- Suppress development dependencies if they don't affect production -->
+    <suppress>
+        <notes>Test dependencies don't affect production security</notes>
+        <packageUrl regex="true">^pkg:pypi/pytest.*$</packageUrl>
+        <cvssBelow>7.0</cvssBelow>
+    </suppress>
+    
+</suppressions>
