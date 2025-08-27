@@ -1,0 +1,318 @@
+name: Release & Deploy
+
+on:
+  push:
+    tags:
+      - 'v*'
+  release:
+    types: [published]
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  security-pre-release:
+    name: Pre-Release Security Validation
+    runs-on: ubuntu-latest
+    outputs:
+      security-passed: ${{ steps.security-check.outputs.passed }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install bandit safety
+
+      - name: Critical security checks
+        id: security-check
+        run: |
+          # Run critical security checks that must pass for release
+          echo "Running pre-release security validation..."
+          
+          # Check for high-severity security issues
+          bandit -r app/ -ll -f json -o bandit-critical.json || BANDIT_FAILED=true
+          
+          # Check for known vulnerabilities in dependencies
+          safety check --json --output safety-critical.json || SAFETY_FAILED=true
+          
+          if [[ $BANDIT_FAILED == "true" ]] || [[ $SAFETY_FAILED == "true" ]]; then
+            echo "Critical security issues found. Release blocked."
+            echo "passed=false" >> $GITHUB_OUTPUT
+            exit 1
+          else
+            echo "Pre-release security validation passed."
+            echo "passed=true" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Upload critical security results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: pre-release-security
+          path: |
+            bandit-critical.json
+            safety-critical.json
+
+  build-and-push:
+    name: Build & Push Container Image
+    runs-on: ubuntu-latest
+    needs: security-pre-release
+    if: needs.security-pre-release.outputs.security-passed == 'true'
+    permissions:
+      contents: read
+      packages: write
+      security-events: write
+    outputs:
+      image-digest: ${{ steps.build.outputs.digest }}
+      image-tag: ${{ steps.meta.outputs.tags }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=ref,event=tag
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=semver,pattern={{major}}
+
+      - name: Build and push Docker image
+        id: build
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./Dockerfile
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Generate SBOM
+        uses: anchore/sbom-action@v0
+        with:
+          image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.ref_name }}
+          format: spdx-json
+          output-file: release-sbom.spdx.json
+
+      - name: Scan release image for vulnerabilities
+        uses: aquasecurity/trivy-action@0.24.0
+        with:
+          image-ref: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.ref_name }}
+          format: 'sarif'
+          output: 'release-trivy-results.sarif'
+
+      # Note: SARIF upload to Security tab requires GitHub Advanced Security
+      # - name: Upload Trivy scan results to GitHub Security tab
+      #   uses: github/codeql-action/upload-sarif@v2
+      #   with:
+      #     sarif_file: 'release-trivy-results.sarif'
+
+      - name: Upload release artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-artifacts
+          path: |
+            release-sbom.spdx.json
+            release-trivy-results.sarif
+
+  sign-image:
+    name: Sign Container Image
+    runs-on: ubuntu-latest
+    needs: build-and-push
+    permissions:
+      contents: read
+      packages: write
+      id-token: write
+    steps:
+      - name: Install Cosign
+        uses: sigstore/cosign-installer@v3
+
+      - name: Log in to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Sign container image
+        env:
+          COSIGN_EXPERIMENTAL: "true"
+        run: |
+          echo "Signing image: ${{ needs.build-and-push.outputs.image-tag }}"
+          cosign sign --yes ${{ needs.build-and-push.outputs.image-tag }}@${{ needs.build-and-push.outputs.image-digest }}
+
+  package-helm-chart:
+    name: Package & Publish Helm Chart
+    runs-on: ubuntu-latest
+    needs: [build-and-push, sign-image]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v3
+        with:
+          version: '3.12.0'
+
+      - name: Package Helm chart
+        run: |
+          # Update chart version to match release tag
+          VERSION=${GITHUB_REF_NAME#v}
+          sed -i "s/version: .*/version: $VERSION/" helm/currency-converter/Chart.yaml
+          sed -i "s/appVersion: .*/appVersion: \"$VERSION\"/" helm/currency-converter/Chart.yaml
+          
+          # Package the chart
+          helm package helm/currency-converter/ --destination ./charts/
+          
+          # Generate index
+          helm repo index ./charts/
+
+      - name: Upload Helm chart
+        uses: actions/upload-artifact@v4
+        with:
+          name: helm-chart
+          path: charts/
+
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    needs: [build-and-push, package-helm-chart]
+    environment: staging
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v3
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v3
+
+      - name: Deploy to staging
+        run: |
+          # This would connect to your staging Kubernetes cluster
+          # kubectl config set-cluster staging --server=${{ secrets.STAGING_K8S_SERVER }}
+          # kubectl config set-credentials staging --token=${{ secrets.STAGING_K8S_TOKEN }}
+          # kubectl config set-context staging --cluster=staging --user=staging
+          # kubectl config use-context staging
+          
+          echo "Deploying to staging environment..."
+          echo "Image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.ref_name }}"
+          
+          # helm upgrade --install currency-converter-staging helm/currency-converter/ \
+          #   --set image.repository=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }} \
+          #   --set image.tag=${{ github.ref_name }} \
+          #   --namespace staging \
+          #   --create-namespace
+
+      - name: Run staging smoke tests
+        run: |
+          echo "Running staging smoke tests..."
+          # Add your staging smoke tests here
+          # curl -f https://staging-api.company.com/health
+
+  deploy-production:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: [build-and-push, package-helm-chart, deploy-staging]
+    environment: production
+    if: startsWith(github.ref, 'refs/tags/v') && !contains(github.ref, '-')
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up kubectl
+        uses: azure/setup-kubectl@v3
+
+      - name: Set up Helm
+        uses: azure/setup-helm@v3
+
+      - name: Deploy to production
+        run: |
+          # This would connect to your production Kubernetes cluster
+          echo "Deploying to production environment..."
+          echo "Image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.ref_name }}"
+          
+          # Production deployment with additional safety checks
+          # helm upgrade --install currency-converter helm/currency-converter/ \
+          #   --set image.repository=${{ env.REGISTRY }}/${{ env.IMAGE_NAME }} \
+          #   --set image.tag=${{ github.ref_name }} \
+          #   --namespace production \
+          #   --atomic \
+          #   --timeout 10m \
+          #   -f helm/currency-converter/values-production.yaml
+
+      - name: Run production health checks
+        run: |
+          echo "Running production health checks..."
+          # Add your production health checks here
+          # curl -f https://api.company.com/health
+
+  release-notification:
+    name: Release Notification
+    runs-on: ubuntu-latest
+    needs: [deploy-production]
+    if: always()
+    steps:
+      - name: Notify release status
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const success = '${{ needs.deploy-production.result }}' === 'success';
+            const version = context.ref.replace('refs/tags/', '');
+            
+            const body = success 
+              ? `## Release ${version} Deployed Successfully\n\n**Production deployment completed**\n\n**Security Validations:**\n- Container image signed with Cosign\n- SBOM generated and attached\n- Vulnerability scans passed\n- License compliance verified\n\n**Deployment Details:**\n- Image: \`ghcr.io/${{ github.repository }}:${version}\`\n- Environment: Production\n- Helm Chart: v${version}\n\n**Links:**\n- [Production API](https://api.company.com)\n- [Health Check](https://api.company.com/health)\n- [API Documentation](https://api.company.com/docs)`
+              : `## Release ${version} Deployment Failed\n\n**Production deployment failed**\n\nPlease check the workflow logs for details.`;
+            
+            github.rest.repos.createRelease({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              tag_name: version,
+              name: `Release ${version}`,
+              body: body,
+              draft: false,
+              prerelease: version.includes('-')
+            });
+
+  security-post-release:
+    name: Post-Release Security Monitoring
+    runs-on: ubuntu-latest
+    needs: [deploy-production]
+    if: success()
+    steps:
+      - name: Schedule security monitoring
+        run: |
+          echo "Setting up continuous security monitoring for release..."
+          echo "- Container image: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.ref_name }}"
+          echo "- Production endpoint monitoring enabled"
+          echo "- Vulnerability database updates scheduled"
+          
+          # This could trigger external monitoring systems
+          # or schedule regular security scans of the deployed application

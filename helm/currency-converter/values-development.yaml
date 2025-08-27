@@ -1,0 +1,31 @@
+# Development values for currency-converter
+replicaCount: 1
+
+image:
+  repository: currency-converter
+  pullPolicy: Always
+  tag: "latest"
+
+service:
+  type: NodePort
+  port: 80
+
+resources:
+  limits:
+    cpu: 200m
+    memory: 256Mi
+  requests:
+    cpu: 50m
+    memory: 64Mi
+
+config:
+  logLevel: "debug"
+  cacheTimeout: 600
+  binanceApiTimeout: 10
+
+healthCheck:
+  initialDelaySeconds: 10
+  periodSeconds: 5
+
+redis:
+  enabled: false
