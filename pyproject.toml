@@ -1,0 +1,34 @@
+[build-system]
+requires = ["setuptools", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "currency-converter"
+version = "1.0.0"
+description = "Real-time currency conversion API using Binance rates"
+authors = [{name = "Shell Trading Assessment"}]
+dependencies = [
+    "fastapi>=0.104.1",
+    "uvicorn[standard]>=0.24.0",
+    "httpx>=0.27.0",
+    "pydantic>=2.7.4,<3.0.0",
+    "redis>=5.0.1",
+    "python-dotenv>=1.0.0"
+]
+
+[project.optional-dependencies]
+test = [
+    "pytest>=7.4.3",
+    "pytest-asyncio>=0.21.1",
+    "httpx",
+    "pytest-mock"
+]
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py311"

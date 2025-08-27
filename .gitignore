@@ -205,3 +205,22 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+# Docker
+.dockerignore
+
+# Kubernetes & Helm
+*.tgz
+helm/*/charts/
+helm/*/requirements.lock
+
+# Application logs
+*.log
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db

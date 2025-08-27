@@ -1,0 +1,17 @@
+apiVersion: v2
+name: currency-converter
+description: A Helm chart for Currency Converter API service
+type: application
+version: 0.1.0
+appVersion: "1.0.0"
+keywords:
+  - currency
+  - api
+  - fintech
+  - rest
+home: https://github.com/shell-trading/currency-converter
+sources:
+  - https://github.com/shell-trading/currency-converter
+maintainers:
+  - name: Shell Trading Team
+    email: devops@shelltrading.com
