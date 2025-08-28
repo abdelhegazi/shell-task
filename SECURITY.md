@@ -233,14 +233,6 @@ The project maintains the following security metrics:
 - Monthly tool version updates
 - Quarterly security tool evaluation
 
-## Contact & Support
-
-For security concerns or questions:
-
-- **Security Team**: security@company.com
-- **Emergency**: security-emergency@company.com
-- **Bug Bounty**: security-bugs@company.com
-
 ## Conclusion
 
 This security implementation demonstrates enterprise-grade security practices suitable for financial services and trading platforms. The multi-layered approach ensures comprehensive protection while maintaining development velocity through automation and integration.
